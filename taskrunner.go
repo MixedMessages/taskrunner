@@ -36,6 +36,9 @@ var (
 	errRunnerAlreadyStopped = errors.New("runner is already stopped and cannot be stopped again")
 )
 
+// Promise is a function that returns the result of an asynchronous task.
+type Promise func() (interface{}, error)
+
 // Task is an interface for performing a given task.
 // Task self-describes how the job is to be handled by the Task.
 // Returns an error to report task completion.
@@ -102,7 +105,7 @@ type taskResult struct {
 // The given context is used as a hook to cancel a running worker task.
 // Run returns a closure over the result of a Task. When the result of a Task
 // is desired, you can call the function to retrieve the result.
-func (p *TaskRunner) Run(ctx context.Context, w Task) func() (interface{}, error) {
+func (p *TaskRunner) Run(ctx context.Context, w Task) Promise {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
 
