@@ -36,14 +36,6 @@ var (
 	errRunnerAlreadyStopped = errors.New("runner is already stopped and cannot be stopped again")
 )
 
-// Runner provides a pool of goroutines that can execute any Task
-// tasks that are submitted.
-type Runner interface {
-	Run(Task) error
-	Start() error
-	Stop() error
-}
-
 // Task is an interface for performing a given task.
 // Task self-describes how the job is to be handled by the Task.
 // Returns an error to report task completion.
