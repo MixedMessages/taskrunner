@@ -8,7 +8,7 @@ The library provides an interface that must be implemented to run a Task concurr
 and a concurrency-safe API for running tasks concurrently without managing the
 channels, goroutines and waitgroups yourself.
 
-## Using Taskrunner
+## Using TaskRunner
 To use Taskrunner, you'll need some setup.
 Define a struct that implements the `Task` interface to use as the payload to Run.
 
@@ -69,4 +69,12 @@ if _, err := promise(); err != nil {
 ```
 
 ## Examples
-TODO.
+See the [examples](https://github.com/MixedMessages/taskrunner/tree/master/examples) directory
+for some codified example usages of `taskrunner`.
+
+* `helloworld` shows how to run simple Tasks with no return value.
+* `helloworld` shows how to run simple Tasks with a return value and possible
+error state. Shows how to use the promises and how to perform a type assertion
+to safely check the return value.
+* `expvar` includes an example of accessing the metric hooks available via
+the Option functions and uses `expvar` to demonstrate.
