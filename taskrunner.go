@@ -5,6 +5,10 @@ import (
 	"errors"
 	"sync"
 	"sync/atomic"
+	"time"
+
+	"github.com/go-kit/kit/metrics"
+	"github.com/go-kit/kit/metrics/discard"
 )
 
 // Defaults for the TaskRunner.
@@ -39,6 +43,11 @@ var (
 // Promise is a function that returns the result of an asynchronous task.
 type Promise func() (interface{}, error)
 
+// Option is a function that allows configuration of unexported TaskRunner fields.
+// Allows the package to validate input parameters so that a TaskRunner cannot
+// be incorrectly created.
+type Option func(*TaskRunner) error
+
 // Task is an interface for performing a given task.
 // Task self-describes how the job is to be handled by the Task.
 // Returns an error to report task completion.
@@ -52,13 +61,17 @@ type TaskRunner struct {
 	tasks chan taskWrapper
 	exit  chan struct{}
 
-	wg sync.WaitGroup
-
-	mtx sync.RWMutex
-
+	wg    sync.WaitGroup
+	mtx   sync.RWMutex
 	state uint32
 
 	maxWorkers int
+
+	// Metrics aggregation hooks.
+	taskCounter            metrics.Counter
+	unhandledPromisesGauge metrics.Gauge
+	workersGauge           metrics.Gauge
+	averageTaskTime        metrics.Histogram
 }
 
 // NewTaskRunner creates an TaskRunner.
@@ -74,6 +87,11 @@ func NewTaskRunner(options ...func(*TaskRunner) error) (*TaskRunner, error) {
 		state: stoppedState,
 
 		maxWorkers: maxWorkers,
+
+		taskCounter:            discard.NewCounter(),
+		unhandledPromisesGauge: discard.NewGauge(),
+		workersGauge:           discard.NewGauge(),
+		averageTaskTime:        discard.NewHistogram(),
 	}
 
 	for _, opt := range options {
@@ -115,6 +133,9 @@ func (p *TaskRunner) Run(ctx context.Context, w Task) Promise {
 		}
 	}
 
+	// Increment the task counter.
+	p.taskCounter.Add(1)
+
 	resultChannel := make(chan taskResult, 1)
 
 	task := taskWrapper{
@@ -127,6 +148,8 @@ func (p *TaskRunner) Run(ctx context.Context, w Task) Promise {
 	case p.tasks <- task:
 		// Return a closure over the result channel response.
 		return func() (interface{}, error) {
+			p.unhandledPromisesGauge.Add(1)
+			defer p.unhandledPromisesGauge.Add(-1)
 
 			select {
 			case result := <-resultChannel:
@@ -167,7 +190,10 @@ func (p *TaskRunner) Start() error {
 	for i := 0; i < p.maxWorkers; i++ {
 		go func() {
 
+			// Increment worker gauge count.
+			p.workersGauge.Add(1)
 			defer p.wg.Done()
+			defer p.workersGauge.Add(-1)
 
 			for {
 				select {
@@ -176,7 +202,9 @@ func (p *TaskRunner) Start() error {
 					return
 
 				case w := <-p.tasks:
+					start := time.Now()
 					res, err := w.task.Task(w.ctx)
+					p.averageTaskTime.Observe(float64(time.Since(start).Nanoseconds()))
 
 					select {
 					case w.resultChannel <- taskResult{res, err}:

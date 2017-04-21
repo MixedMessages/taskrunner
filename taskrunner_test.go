@@ -191,10 +191,12 @@ func TestTaskRunnerConcurrentStartRunStop(t *testing.T) {
 		})
 	}
 
-	eg.Go(runner.Stop)
-
-	if err := eg.Wait(); err == nil || err != errRunnerNotStarted {
+	if err := eg.Wait(); err != nil {
 		t.Errorf("unexpected error from concurrency start-run-stop of runner - err=%+v", err)
+	}
+
+	if err := runner.Stop(); err != nil {
+		t.Errorf("unexpected error from stopping task runner - err=%+v", err)
 	}
 
 }
