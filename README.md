@@ -8,6 +8,11 @@ The library provides an interface that must be implemented to run a Task concurr
 and a concurrency-safe API for running tasks concurrently without managing the
 channels, goroutines and waitgroups yourself.
 
+Note that using the library is generally less efficient than using Go's
+concurrency primitives directly. This library hopes to provide code reuse with
+access to concurrency without having to reimplement the same channel patterns
+over and over again.
+
 ## Using TaskRunner
 To use Taskrunner, you'll need some setup.
 Define a struct that implements the `Task` interface to use as the payload to Run.
