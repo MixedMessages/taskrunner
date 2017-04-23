@@ -1,4 +1,4 @@
-# Taskrunner [![GoDoc](https://godoc.org/github.com/MixedMessages/taskrunner?status.svg)](https://godoc.org/github.com/MixedMessages/taskrunner) [![Build Status](https://travis-ci.org/MixedMessages/taskrunner.svg?branch=master)](https://travis-ci.org/MixedMessages/taskrunner)
+# Taskrunner [![GoDoc](https://godoc.org/github.com/MixedMessages/taskrunner?status.svg)](https://godoc.org/github.com/MixedMessages/taskrunner) [![Build Status](https://travis-ci.org/MixedMessages/taskrunner.svg?branch=master)](https://travis-ci.org/MixedMessages/taskrunner) [![Go Report Card](https://goreportcard.com/badge/github.com/mixedmessages/taskrunner)](https://goreportcard.com/report/github.com/mixedmessages/taskrunner)
 
 ## Background
 Package taskrunner provides an API for running concurrent tasks in a promise-like

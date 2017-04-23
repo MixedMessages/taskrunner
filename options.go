@@ -11,7 +11,7 @@ import (
 func OptionMaxGoroutines(n int) Option {
 	return func(r *TaskRunner) error {
 		if n <= 0 {
-			return errors.New("number of goroutines must be postive")
+			return errors.New("number of goroutines must be positive")
 		}
 
 		r.maxWorkers = n
