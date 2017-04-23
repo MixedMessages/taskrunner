@@ -24,6 +24,8 @@ install: deps
 	go install github.com/MixedMessages/taskrunner/...
 
 lint:
+	if command -v golint >/dev/null 2>&1; then go get -v github.com/golang/lint/golint; fi
+
 	go list ./... | grep -v /examples/ | xargs -L1 golint
 
 test: deps-test
