@@ -107,12 +107,14 @@ func TestTaskRunnerRun(t *testing.T) {
 			var runError error
 			for i := 0; i < test.runs; i++ {
 
-				ctx, _ := context.WithTimeout(context.Background(), timeout)
+				ctx, done := context.WithTimeout(context.Background(), timeout)
 				promise := runner.Run(ctx, &mockTask{false, test.task})
 
 				if _, err := promise(); err != nil {
 					runError = err
 				}
+
+				done()
 			}
 
 			if (runError != nil && !test.wantErr) || (runError == nil && test.wantErr) {
